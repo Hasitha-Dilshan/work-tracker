@@ -168,6 +168,7 @@
       transform: translateX(24px);
     }
 
+    /* Responsive */
     @media (max-width: 600px) {
       .form-group {
         grid-template-columns: 1fr;
@@ -178,6 +179,10 @@
       th, td {
         font-size: 12px;
         padding: 8px;
+      }
+      .footer {
+        font-size: 13px;
+        padding: 15px;
       }
     }
 
@@ -200,6 +205,18 @@
         display: none !important;
       }
     }
+
+    /* Footer styles */
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      padding: 20px;
+      font-size: 14px;
+      color: #555;
+      background-color: #f2f2f2;
+      border-top: 1px solid #ccc;
+      border-radius: 0 0 20px 20px;
+    }
   </style>
 </head>
 <body>
@@ -208,30 +225,30 @@
 
     <div class="form-group">
       <label for="subject">Subject:</label>
-      <select id="subject">
-        <option value="">Select Subject</option>
-        <option>Data Communication</option>
-        <option>Computer Architecture and Programming</option>
-        <option>Fundamental of Communication</option>
-        <option>Occupational Health & Safety</option>
-        <option>Electronic</option>
-        <option>EMP</option>
-        <option>Mathematics</option>
-        <option>English</option>
-      </select>
+      <input list="subjectOptions" id="subject" placeholder="Select or type Subject">
+      <datalist id="subjectOptions">
+        <option value="Data Communication">
+        <option value="Computer Architecture and Programming">
+        <option value="Fundamental of Communication">
+        <option value="Occupational Health & Safety">
+        <option value="Electronic">
+        <option value="EMP">
+        <option value="Mathematics">
+        <option value="English">
+      </datalist>
 
       <label for="date">Date:</label>
       <input type="date" id="date">
 
       <label for="taskTitle">Task Title:</label>
-      <select id="taskTitle">
-        <option value="">Select Task Title</option>
-        <option>Note Writing</option>
-        <option>Mind Map</option>
-        <option>Assignment</option>
-        <option>Presentation</option>
-        <option>To - Do Task</option>
-      </select>
+      <input list="taskOptions" id="taskTitle" placeholder="Select or type Task Title">
+      <datalist id="taskOptions">
+        <option value="Note Writing">
+        <option value="Mind Map">
+        <option value="Assignment">
+        <option value="Presentation">
+        <option value="To - Do Task">
+      </datalist>
 
       <label for="task">Task Description (optional):</label>
       <textarea id="task" placeholder="Add extra info if needed..."></textarea>
@@ -284,6 +301,11 @@
       <button onclick="window.print()">🖨️ Print Tables</button>
       <button onclick="exportToExcel()">📥 Export to Excel</button>
     </div>
+
+    <footer class="footer">
+      Powered by <strong>Hasitha Dilshan</strong><br>
+      HND in Telecommunication Technology Student 2025
+    </footer>
   </div>
 
   <script>
