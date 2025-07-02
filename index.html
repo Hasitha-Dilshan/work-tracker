@@ -168,6 +168,26 @@
       transform: translateX(24px);
     }
 
+    .dropdown-wrapper {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .dropdown-wrapper input[list] {
+      padding-right: 40px;
+    }
+
+    .dropdown-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      font-size: 18px;
+      color: #555;
+    }
+
     /* Responsive */
     @media (max-width: 600px) {
       .form-group {
@@ -206,7 +226,6 @@
       }
     }
 
-    /* Footer styles */
     .footer {
       text-align: center;
       margin-top: 40px;
@@ -225,7 +244,10 @@
 
     <div class="form-group">
       <label for="subject">Subject:</label>
-      <input list="subjectOptions" id="subject" placeholder="Select or type Subject">
+      <div class="dropdown-wrapper">
+        <input list="subjectOptions" id="subject" placeholder="Select or type Subject">
+        <span class="dropdown-icon">▼</span>
+      </div>
       <datalist id="subjectOptions">
         <option value="Data Communication">
         <option value="Computer Architecture and Programming">
@@ -241,7 +263,10 @@
       <input type="date" id="date">
 
       <label for="taskTitle">Task Title:</label>
-      <input list="taskOptions" id="taskTitle" placeholder="Select or type Task Title">
+      <div class="dropdown-wrapper">
+        <input list="taskOptions" id="taskTitle" placeholder="Select or type Task Title">
+        <span class="dropdown-icon">▼</span>
+      </div>
       <datalist id="taskOptions">
         <option value="Note Writing">
         <option value="Mind Map">
