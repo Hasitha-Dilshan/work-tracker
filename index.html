@@ -13,7 +13,8 @@
       padding: 0;
       color: #333;
     }
-   .container {
+
+    .container {
       max-width: 1200px;
       width: 95%;
       margin: 40px auto;
@@ -23,20 +24,22 @@
       box-shadow: 0 10px 30px rgba(0, 123, 255, 0.1);
     }
 
-    
     h1 {
       text-align: center;
       color: #1565c0;
     }
+
     .form-group {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 20px;
       margin-bottom: 15px;
     }
+
     .form-group label {
       font-weight: 600;
     }
+
     .form-group input,
     .form-group select,
     textarea {
@@ -47,13 +50,19 @@
       width: 100%;
       box-sizing: border-box;
     }
+
     textarea {
       grid-column: span 2;
       resize: none;
     }
-    button {
+
+    .form-buttons {
       grid-column: span 2;
-      padding: 12px;
+      text-align: center;
+    }
+
+    button {
+      padding: 12px 24px;
       background: #1976d2;
       border: none;
       color: white;
@@ -61,26 +70,33 @@
       border-radius: 10px;
       cursor: pointer;
       transition: 0.3s;
+      margin: 10px;
     }
+
     button:hover {
       background: #0d47a1;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 30px;
     }
+
     table, th, td {
       border: 1px solid #ccc;
     }
+
     th, td {
       padding: 12px;
       text-align: center;
     }
+
     th {
       background: #1565c0;
       color: white;
     }
+
     .action-btn {
       background: #f44336;
       border: none;
@@ -89,18 +105,74 @@
       border-radius: 6px;
       cursor: pointer;
     }
+
     .edit-btn {
       background: #4caf50;
     }
+
     .done-btn {
       background: #1565c0;
+    }
+
+    .switch-container {
+      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 26px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #2196F3;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
     }
 
     @media (max-width: 600px) {
       .form-group {
         grid-template-columns: 1fr;
       }
-      textarea, button {
+      textarea, .form-buttons {
         grid-column: span 1;
       }
       th, td {
@@ -108,11 +180,32 @@
         padding: 8px;
       }
     }
+
+    /* Print only tables, hide Actions column */
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+      #printArea, #printArea * {
+        visibility: visible !important;
+      }
+      #printArea {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+      }
+      #taskTable th:nth-child(5),
+      #taskTable td:nth-child(5) {
+        display: none !important;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Weekly Work Tracker</h1>
+
     <div class="form-group">
       <label for="subject">Subject:</label>
       <select id="subject">
@@ -140,43 +233,57 @@
         <option>To - Do Task</option>
       </select>
 
-      <label for="task">Task Description (if extra details):</label>
-      <textarea id="task" placeholder="Add extra info or new task title if not in the list..."></textarea>
+      <label for="task">Task Description (optional):</label>
+      <textarea id="task" placeholder="Add extra info if needed..."></textarea>
 
       <label for="deadline">Deadline:</label>
       <input type="date" id="deadline">
 
-      <button onclick="addTask()">Add Task</button>
+      <div class="form-buttons">
+        <button onclick="addTask()" style="min-width: 380px;">➕ Add Task</button>
+      </div>
     </div>
 
-    <!-- Active Tasks Table -->
-    <table id="taskTable">
-      <thead>
-        <tr>
-          <th>Subject</th>
-          <th>Date</th>
-          <th>Task Details</th>
-          <th>Deadline</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div id="printArea">
+      <table id="taskTable">
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>Date</th>
+            <th>Task Details</th>
+            <th>Deadline</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
 
-    <!-- Done Tasks Table -->
-    <h2 style="margin-top: 40px; color:#2e7d32;">Completed Tasks</h2>
-    <table id="doneTable">
-      <thead>
-        <tr>
-          <th>Subject</th>
-          <th>Date</th>
-          <th>Task Details</th>
-          <th>Deadline</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+      <h2 style="margin-top: 40px; color:#2e7d32;">Completed Tasks</h2>
+      <table id="doneTable">
+        <thead>
+          <tr id="doneHeader">
+            <th>Subject</th>
+            <th>Date</th>
+            <th>Task Details</th>
+            <th>Deadline</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="switch-container">
+      <span>Show Remove Button:</span>
+      <label class="switch">
+        <input type="checkbox" id="toggleRemove">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div style="text-align:center;">
+      <button onclick="window.print()">🖨️ Print Tables</button>
+      <button onclick="exportToExcel()">📥 Export to Excel</button>
+    </div>
   </div>
 
   <script>
@@ -185,6 +292,7 @@
     document.addEventListener("DOMContentLoaded", () => {
       const today = new Date().toISOString().split("T")[0];
       document.getElementById("date").value = today;
+      document.getElementById('toggleRemove').addEventListener("change", loadDoneTasks);
       loadTasks();
       loadDoneTasks();
     });
@@ -214,7 +322,21 @@
     function loadDoneTasks() {
       const doneTasks = JSON.parse(localStorage.getItem('doneTasks')) || [];
       const table = document.querySelector('#doneTable tbody');
+      const header = document.getElementById('doneHeader');
+      const removeEnabled = document.getElementById('toggleRemove').checked;
+
       table.innerHTML = '';
+
+      const actionTh = header.querySelector('.action-head');
+      if (removeEnabled && !actionTh) {
+        const th = document.createElement('th');
+        th.textContent = 'Actions';
+        th.classList.add('action-head');
+        header.appendChild(th);
+      } else if (!removeEnabled && actionTh) {
+        actionTh.remove();
+      }
+
       doneTasks.forEach((task, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -222,10 +344,12 @@
           <td>${task.date}</td>
           <td><strong>${task.taskTitle}</strong><br>${task.task}</td>
           <td>${task.deadline}</td>
-          <td>
-            <button class="action-btn" onclick="removeDoneTask(${index})">Remove</button>
-          </td>
         `;
+        if (removeEnabled) {
+          const td = document.createElement('td');
+          td.innerHTML = `<button class="action-btn" onclick="removeDoneTask(${index})">Remove</button>`;
+          row.appendChild(td);
+        }
         table.appendChild(row);
       });
     }
@@ -300,6 +424,21 @@
       doneTasks.splice(index, 1);
       localStorage.setItem('doneTasks', JSON.stringify(doneTasks));
       loadDoneTasks();
+    }
+
+    function exportToExcel() {
+      let data = "<table border='1'>";
+      data += document.getElementById('taskTable').outerHTML;
+      data += document.getElementById('doneTable').outerHTML;
+      data += "</table>";
+      const blob = new Blob([data], { type: 'application/vnd.ms-excel' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'tasks.xls';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
   </script>
 </body>
