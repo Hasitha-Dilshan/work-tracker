@@ -115,12 +115,13 @@
     }
 
     .switch-container {
-      margin-top: 30px;
+      margin-top: 20px;
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 10px;
       font-weight: 600;
+      flex-wrap: wrap;
     }
 
     .switch {
@@ -168,27 +169,6 @@
       transform: translateX(24px);
     }
 
-    .dropdown-wrapper {
-      position: relative;
-      display: inline-block;
-      width: 100%;
-    }
-
-    .dropdown-wrapper input[list] {
-      padding-right: 40px;
-    }
-
-    .dropdown-icon {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      pointer-events: none;
-      font-size: 18px;
-      color: #555;
-    }
-
-    /* Responsive */
     @media (max-width: 600px) {
       .form-group {
         grid-template-columns: 1fr;
@@ -206,7 +186,6 @@
       }
     }
 
-    /* Print only tables, hide Actions column */
     @media print {
       body * {
         visibility: hidden !important;
@@ -242,44 +221,52 @@
   <div class="container">
     <h1>Weekly Work Tracker</h1>
 
+
+
     <div class="form-group">
       <label for="subject">Subject:</label>
-      <div class="dropdown-wrapper">
-        <input list="subjectOptions" id="subject" placeholder="Select or type Subject">
-        <span class="dropdown-icon">▼</span>
-      </div>
-      <datalist id="subjectOptions">
-        <option value="Data Communication">
-        <option value="Computer Architecture and Programming">
-        <option value="Fundamental of Communication">
-        <option value="Occupational Health & Safety">
-        <option value="Electronic">
-        <option value="EMP">
-        <option value="Mathematics">
-        <option value="English">
-      </datalist>
+      <select id="subjectSelect">
+        <option value="">Select Subject</option>
+        <option>Data Communication</option>
+        <option>Computer Architecture and Programming</option>
+        <option>Fundamental of Communication</option>
+        <option>Occupational Health & Safety</option>
+        <option>Electronic</option>
+        <option>EMP</option>
+        <option>Mathematics</option>
+        <option>English</option>
+      </select>
+      <input type="text" id="subjectInput" placeholder="Type Subject" style="display:none;">
 
       <label for="date">Date:</label>
       <input type="date" id="date">
 
       <label for="taskTitle">Task Title:</label>
-      <div class="dropdown-wrapper">
-        <input list="taskOptions" id="taskTitle" placeholder="Select or type Task Title">
-        <span class="dropdown-icon">▼</span>
-      </div>
-      <datalist id="taskOptions">
-        <option value="Note Writing">
-        <option value="Mind Map">
-        <option value="Assignment">
-        <option value="Presentation">
-        <option value="To - Do Task">
-      </datalist>
+      <select id="taskTitleSelect">
+        <option value="">Select Task Title</option>
+        <option>Note Writing</option>
+        <option>Mind Map</option>
+        <option>Assignment</option>
+        <option>Presentation</option>
+        <option>To - Do Task</option>
+      </select>
+      <input type="text" id="taskTitleInput" placeholder="Type Task Title" style="display:none;">
+
+	<div class="switch-container" style="grid-column: span 2; justify-content: flex-end;">
+  <span>Enable Typing:</span>
+  <label class="switch">
+    <input type="checkbox" id="toggleTyping">
+    <span class="slider"></span>
+  </label>
+</div>
 
       <label for="task">Task Description (optional):</label>
       <textarea id="task" placeholder="Add extra info if needed..."></textarea>
 
       <label for="deadline">Deadline:</label>
       <input type="date" id="deadline">
+
+      
 
       <div class="form-buttons">
         <button onclick="addTask()" style="min-width: 380px;">➕ Add Task</button>
@@ -313,19 +300,23 @@
         <tbody></tbody>
       </table>
     </div>
-
-    <div class="switch-container">
-      <span>Show Remove Button:</span>
+	  
+	  
+	<div class="switch-container" style="grid-column: span 2;">
+	  <span>Show Remove Button:</span>
       <label class="switch">
         <input type="checkbox" id="toggleRemove">
         <span class="slider"></span>
       </label>
-    </div>
-
-    <div style="text-align:center;">
+	  
+	</div>
+	    <!-- Bottom Controls FIRST (Print/Export/Toggle Remove) -->
+    <div class="switch-container" style="margin-bottom: 30px;">
       <button onclick="window.print()">🖨️ Print Tables</button>
       <button onclick="exportToExcel()">📥 Export to Excel</button>
+      
     </div>
+	
 
     <footer class="footer">
       Powered by <strong>Hasitha Dilshan</strong><br>
@@ -340,9 +331,62 @@
       const today = new Date().toISOString().split("T")[0];
       document.getElementById("date").value = today;
       document.getElementById('toggleRemove').addEventListener("change", loadDoneTasks);
+      document.getElementById('toggleTyping').addEventListener("change", toggleTypingMode);
       loadTasks();
       loadDoneTasks();
     });
+
+    function toggleTypingMode() {
+      const isTyping = document.getElementById('toggleTyping').checked;
+      document.getElementById('subjectInput').style.display = isTyping ? 'block' : 'none';
+      document.getElementById('subjectSelect').style.display = isTyping ? 'none' : 'block';
+      document.getElementById('taskTitleInput').style.display = isTyping ? 'block' : 'none';
+      document.getElementById('taskTitleSelect').style.display = isTyping ? 'none' : 'block';
+    }
+
+    function getFieldValue(selectId, inputId) {
+      const isTyping = document.getElementById('toggleTyping').checked;
+      return isTyping
+        ? document.getElementById(inputId).value.trim()
+        : document.getElementById(selectId).value;
+    }
+
+    function addTask() {
+      const subject = getFieldValue('subjectSelect', 'subjectInput');
+      const date = document.getElementById('date').value;
+      const taskTitle = getFieldValue('taskTitleSelect', 'taskTitleInput');
+      const task = document.getElementById('task').value;
+      const deadline = document.getElementById('deadline').value;
+
+      if (!subject || !date || !deadline || (!task && !taskTitle)) {
+        return alert('Please fill in Subject, Date, Deadline and at least Task Title or Task Description.');
+      }
+
+      const finalTaskTitle = taskTitle || "(Other)";
+      const finalTask = task || taskTitle;
+      const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+      if (editIndex !== null) {
+        tasks[editIndex] = { subject, date, task: finalTask, deadline, taskTitle: finalTaskTitle };
+        editIndex = null;
+      } else {
+        tasks.push({ subject, date, task: finalTask, deadline, taskTitle: finalTaskTitle });
+      }
+
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+      clearForm();
+      loadTasks();
+    }
+
+    function clearForm() {
+      document.getElementById('subjectSelect').value = '';
+      document.getElementById('subjectInput').value = '';
+      document.getElementById('taskTitleSelect').value = '';
+      document.getElementById('taskTitleInput').value = '';
+      document.getElementById('task').value = '';
+      document.getElementById('deadline').value = '';
+      document.getElementById('date').value = new Date().toISOString().split("T")[0];
+    }
 
     function loadTasks() {
       const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
@@ -373,7 +417,6 @@
       const removeEnabled = document.getElementById('toggleRemove').checked;
 
       table.innerHTML = '';
-
       const actionTh = header.querySelector('.action-head');
       if (removeEnabled && !actionTh) {
         const th = document.createElement('th');
@@ -401,6 +444,30 @@
       });
     }
 
+    function editTask(index) {
+      const tasks = JSON.parse(localStorage.getItem('tasks'));
+      const task = tasks[index];
+      document.getElementById('date').value = task.date;
+      document.getElementById('task').value = task.task;
+      document.getElementById('deadline').value = task.deadline;
+      const isTyping = document.getElementById('toggleTyping').checked;
+      if (isTyping) {
+        document.getElementById('subjectInput').value = task.subject;
+        document.getElementById('taskTitleInput').value = task.taskTitle;
+      } else {
+        document.getElementById('subjectSelect').value = task.subject;
+        document.getElementById('taskTitleSelect').value = task.taskTitle;
+      }
+      editIndex = index;
+    }
+
+    function deleteTask(index) {
+      const tasks = JSON.parse(localStorage.getItem('tasks'));
+      tasks.splice(index, 1);
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+      loadTasks();
+    }
+
     function markDone(index) {
       const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
       const doneTasks = JSON.parse(localStorage.getItem('doneTasks')) || [];
@@ -410,60 +477,6 @@
       localStorage.setItem('doneTasks', JSON.stringify(doneTasks));
       loadTasks();
       loadDoneTasks();
-    }
-
-    function addTask() {
-      const subject = document.getElementById('subject').value;
-      const date = document.getElementById('date').value;
-      const task = document.getElementById('task').value;
-      const taskTitle = document.getElementById('taskTitle').value;
-      const deadline = document.getElementById('deadline').value;
-
-      if (!subject || !date || !deadline || (!task && !taskTitle)) {
-        return alert('Please fill in Subject, Date, Deadline and at least Task Title or Task Description.');
-      }
-
-      const finalTaskTitle = taskTitle || "(Other)";
-      const finalTask = task || taskTitle;
-
-      const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-
-      if (editIndex !== null) {
-        tasks[editIndex] = { subject, date, task: finalTask, deadline, taskTitle: finalTaskTitle };
-        editIndex = null;
-      } else {
-        tasks.push({ subject, date, task: finalTask, deadline, taskTitle: finalTaskTitle });
-      }
-
-      localStorage.setItem('tasks', JSON.stringify(tasks));
-      clearForm();
-      loadTasks();
-    }
-
-    function clearForm() {
-      document.getElementById('subject').value = '';
-      document.getElementById('date').value = new Date().toISOString().split("T")[0];
-      document.getElementById('task').value = '';
-      document.getElementById('taskTitle').value = '';
-      document.getElementById('deadline').value = '';
-    }
-
-    function editTask(index) {
-      const tasks = JSON.parse(localStorage.getItem('tasks'));
-      const task = tasks[index];
-      document.getElementById('subject').value = task.subject;
-      document.getElementById('date').value = task.date;
-      document.getElementById('task').value = task.task;
-      document.getElementById('taskTitle').value = task.taskTitle;
-      document.getElementById('deadline').value = task.deadline;
-      editIndex = index;
-    }
-
-    function deleteTask(index) {
-      const tasks = JSON.parse(localStorage.getItem('tasks'));
-      tasks.splice(index, 1);
-      localStorage.setItem('tasks', JSON.stringify(tasks));
-      loadTasks();
     }
 
     function removeDoneTask(index) {
@@ -490,3 +503,4 @@
   </script>
 </body>
 </html>
+
