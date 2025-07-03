@@ -551,6 +551,8 @@
     <div class="controls">
       <button class="control-btn" onclick="window.print()">🖨️ Print Tables</button>
       <button class="control-btn" onclick="exportToExcel()">📥 Export to Excel</button>
+	  <button class="control-btn" onclick="exportRecode()">📤 Export Input Recode</button>
+      <button class="control-btn" onclick="importRecode()">📥 Import Input Recode</button>
       <div class="switch-container">
         <span>Show Remove Button:</span>
         <label class="switch">
@@ -881,6 +883,63 @@
         saveData();
       }
     }, 30000); // Save every 30 seconds
+
+function exportRecode() {
+  const data = {
+    tasks,
+    doneTasks,
+    toggleTyping: document.getElementById('toggleTyping').checked,
+    toggleRemove: document.getElementById('toggleRemove').checked
+  };
+
+  const json = JSON.stringify(data);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `weekly_work_tracker_backup_${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importRecode() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json';
+
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = event => {
+      try {
+        const importedData = JSON.parse(event.target.result);
+        tasks = importedData.tasks || [];
+        doneTasks = importedData.doneTasks || [];
+
+        document.getElementById('toggleTyping').checked = importedData.toggleTyping ?? false;
+        document.getElementById('toggleRemove').checked = importedData.toggleRemove ?? false;
+
+        toggleTypingMode();
+        saveData();
+        loadTasks();
+        loadDoneTasks();
+        alert("✅ Import successful!");
+      } catch (err) {
+        alert("⚠️ Invalid file format. Please use a valid JSON backup file.");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  input.click();
+}
+
+
 
     // Save data before page unload
     window.addEventListener('beforeunload', saveData);
