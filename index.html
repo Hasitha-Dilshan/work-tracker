@@ -12,7 +12,7 @@
 
     body {
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      background: linear-gradient(135deg, #f9f9f9 0%, #f1f1f1 100%);
       margin: 0;
       padding: 10px;
       color: #333;
@@ -357,21 +357,46 @@
       }
     }
 
+    /* Print Styles - Hide action buttons and controls */
     @media print {
-      body * {
-        visibility: hidden !important;
-      }
-      #printArea, #printArea * {
-        visibility: visible !important;
-      }
-      #printArea {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-      }
-      .action-btn {
+      .form-section,
+      .controls,
+      .footer {
         display: none !important;
+      }
+      
+      .action-btn,
+      .actions-column {
+        display: none !important;
+      }
+      
+      body {
+        background: white !important;
+        color: black !important;
+      }
+      
+      .container {
+        background: white !important;
+        box-shadow: none !important;
+        padding: 10px !important;
+      }
+      
+      table {
+        page-break-inside: avoid;
+      }
+      
+      th, td {
+        border: 1px solid #333 !important;
+        padding: 8px !important;
+      }
+      
+      .completed-section {
+        background: #f5f5f5 !important;
+        color: black !important;
+      }
+      
+      .completed-section h2 {
+        color: black !important;
       }
     }
 
@@ -410,6 +435,13 @@
 
     .on-track {
       background: linear-gradient(135deg, #4CAF50, #45a049);
+    }
+
+    @media print {
+      .status-indicator {
+        background: #666 !important;
+        color: white !important;
+      }
     }
   </style>
 </head>
@@ -486,7 +518,7 @@
               <th>Date</th>
               <th>Task Details</th>
               <th>Deadline</th>
-              <th>Actions</th>
+              <th class="actions-column">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -530,32 +562,37 @@
     <footer class="footer">
       <strong>🚀 Powered by Hasitha Dilshan</strong><br>
       HND in Telecommunication Technology Student 2025<br>
-      <small>✨ Data stored in browser memory for universal access</small>
+      <small>✨ Data automatically saved to browser storage</small>
     </footer>
   </div>
-
-  <!-- Data Storage Scripts -->
-  <script id="taskData" type="application/json">
-    []
-  </script>
-
-  <script id="doneTaskData" type="application/json">
-    []
-  </script>
 
   <script>
     let editIndex = null;
     let tasks = [];
     let doneTasks = [];
 
-    // Load data from embedded scripts
-    function loadEmbeddedData() {
+    // Load data from localStorage
+    function loadData() {
       try {
-        const taskScript = document.getElementById('taskData');
-        const doneTaskScript = document.getElementById('doneTaskData');
+        const savedTasks = localStorage.getItem('weeklyTrackerTasks');
+        const savedDoneTasks = localStorage.getItem('weeklyTrackerDoneTasks');
         
-        tasks = JSON.parse(taskScript.textContent || '[]');
-        doneTasks = JSON.parse(doneTaskScript.textContent || '[]');
+        tasks = savedTasks ? JSON.parse(savedTasks) : [];
+        doneTasks = savedDoneTasks ? JSON.parse(savedDoneTasks) : [];
+        
+        // Load toggle states
+        const toggleTyping = localStorage.getItem('toggleTyping');
+        const toggleRemove = localStorage.getItem('toggleRemove');
+        
+        if (toggleTyping === 'true') {
+          document.getElementById('toggleTyping').checked = true;
+          toggleTypingMode();
+        }
+        
+        if (toggleRemove === 'true') {
+          document.getElementById('toggleRemove').checked = true;
+        }
+        
       } catch (e) {
         console.log('Loading fresh data');
         tasks = [];
@@ -563,14 +600,16 @@
       }
     }
 
-    // Save data to embedded scripts
-    function saveEmbeddedData() {
+    // Save data to localStorage
+    function saveData() {
       try {
-        const taskScript = document.getElementById('taskData');
-        const doneTaskScript = document.getElementById('doneTaskData');
+        localStorage.setItem('weeklyTrackerTasks', JSON.stringify(tasks));
+        localStorage.setItem('weeklyTrackerDoneTasks', JSON.stringify(doneTasks));
         
-        taskScript.textContent = JSON.stringify(tasks, null, 2);
-        doneTaskScript.textContent = JSON.stringify(doneTasks, null, 2);
+        // Save toggle states
+        localStorage.setItem('toggleTyping', document.getElementById('toggleTyping').checked);
+        localStorage.setItem('toggleRemove', document.getElementById('toggleRemove').checked);
+        
       } catch (e) {
         console.error('Error saving data:', e);
       }
@@ -579,10 +618,22 @@
     document.addEventListener("DOMContentLoaded", () => {
       const today = new Date().toISOString().split("T")[0];
       document.getElementById("date").value = today;
-      document.getElementById('toggleRemove').addEventListener("change", loadDoneTasks);
-      document.getElementById('toggleTyping').addEventListener("change", toggleTypingMode);
       
-      loadEmbeddedData();
+      // Load saved data first
+      loadData();
+      
+      // Set up event listeners
+      document.getElementById('toggleRemove').addEventListener("change", () => {
+        saveData();
+        loadDoneTasks();
+      });
+      
+      document.getElementById('toggleTyping').addEventListener("change", () => {
+        toggleTypingMode();
+        saveData();
+      });
+      
+      // Load tasks after data is loaded
       loadTasks();
       loadDoneTasks();
     });
@@ -651,7 +702,7 @@
           tasks.push({ subject, date, task: finalTask, deadline, taskTitle: finalTaskTitle });
         }
 
-        saveEmbeddedData();
+        saveData();
         clearForm();
         loadTasks();
         hideLoading();
@@ -693,7 +744,7 @@
             ${formatDate(task.deadline)}
             <span class="status-indicator ${taskStatus.class}">${taskStatus.text}</span>
           </td>
-          <td>
+          <td class="actions-column">
             <button class="action-btn edit-btn" onclick="editTask(${index})">✏️</button>
             <button class="action-btn delete-btn" onclick="deleteTask(${index})">🗑️</button>
             <button class="action-btn done-btn" onclick="markDone(${index})">✅</button>
@@ -714,6 +765,7 @@
         const th = document.createElement('th');
         th.textContent = 'Actions';
         th.classList.add('action-head');
+        th.classList.add('actions-column');
         header.appendChild(th);
       } else if (!removeEnabled && actionTh) {
         actionTh.remove();
@@ -742,6 +794,7 @@
         
         if (removeEnabled) {
           const td = document.createElement('td');
+          td.classList.add('actions-column');
           td.innerHTML = `<button class="action-btn delete-btn" onclick="removeDoneTask(${index})">🗑️</button>`;
           row.appendChild(td);
         }
@@ -781,7 +834,7 @@
     function deleteTask(index) {
       if (confirm('Are you sure you want to delete this task?')) {
         tasks.splice(index, 1);
-        saveEmbeddedData();
+        saveData();
         loadTasks();
       }
     }
@@ -789,7 +842,7 @@
     function markDone(index) {
       const task = tasks.splice(index, 1)[0];
       doneTasks.push(task);
-      saveEmbeddedData();
+      saveData();
       loadTasks();
       loadDoneTasks();
     }
@@ -797,7 +850,7 @@
     function removeDoneTask(index) {
       if (confirm('Are you sure you want to remove this completed task?')) {
         doneTasks.splice(index, 1);
-        saveEmbeddedData();
+        saveData();
         loadDoneTasks();
       }
     }
@@ -805,9 +858,9 @@
     function exportToExcel() {
       let data = "<table border='1'>";
       data += "<tr><th colspan='4' style='background:#1e3c72; color:white; padding:10px;'>Active Tasks</th></tr>";
-      data += document.getElementById('taskTable').innerHTML.replace(/<button[^>]*>.*?<\/button>/gi, '');
+      data += document.getElementById('taskTable').innerHTML.replace(/<button[^>]*>.*?<\/button>/gi, '').replace(/<td class="actions-column">.*?<\/td>/gi, '');
       data += "<tr><th colspan='4' style='background:#2e7d32; color:white; padding:10px;'>Completed Tasks</th></tr>";
-      data += document.getElementById('doneTable').innerHTML.replace(/<button[^>]*>.*?<\/button>/gi, '');
+      data += document.getElementById('doneTable').innerHTML.replace(/<button[^>]*>.*?<\/button>/gi, '').replace(/<td class="actions-column">.*?<\/td>/gi, '');
       data += "</table>";
       
       const blob = new Blob([data], { type: 'application/vnd.ms-excel' });
@@ -822,7 +875,14 @@
     }
 
     // Auto-save functionality
-    setInterval(saveEmbeddedData, 30000); // Save every 30 seconds
+    setInterval(() => {
+      if (tasks.length > 0 || doneTasks.length > 0) {
+        saveData();
+      }
+    }, 30000); // Save every 30 seconds
+
+    // Save data before page unload
+    window.addEventListener('beforeunload', saveData);
   </script>
 </body>
 </html>
