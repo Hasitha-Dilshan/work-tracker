@@ -357,7 +357,44 @@
       }
     }
 
-    /* Print Styles - Hide action buttons and controls */
+    /* Status indicators */
+    .status-indicator {
+      padding: 4px 8px;
+      border-radius: 15px;
+      font-size: 11px;
+      font-weight: 600;
+      color: white;
+      margin-left: 5px;
+    }
+
+    .overdue {
+      background: linear-gradient(135deg, #f44336, #d32f2f);
+    }
+
+    .due-soon {
+      background: linear-gradient(135deg, #ff9800, #f57c00);
+    }
+
+    .on-track {
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+    }
+
+    /* Loading Animation */
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Print Styles - Hide action buttons and controls but keep status colors */
     @media print {
       .form-section,
       .controls,
@@ -398,49 +435,27 @@
       .completed-section h2 {
         color: black !important;
       }
-    }
 
-    /* Loading Animation */
-    .loading {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(255,255,255,.3);
-      border-radius: 50%;
-      border-top-color: #fff;
-      animation: spin 1s ease-in-out infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* Status indicators */
-    .status-indicator {
-      padding: 4px 8px;
-      border-radius: 15px;
-      font-size: 11px;
-      font-weight: 600;
-      color: white;
-      margin-left: 5px;
-    }
-
-    .overdue {
-      background: linear-gradient(135deg, #f44336, #d32f2f);
-    }
-
-    .due-soon {
-      background: linear-gradient(135deg, #ff9800, #f57c00);
-    }
-
-    .on-track {
-      background: linear-gradient(135deg, #4CAF50, #45a049);
-    }
-
-    @media print {
-      .status-indicator {
-        background: #666 !important;
+      /* Keep status indicator colors in print */
+      .status-indicator.overdue {
+        background: #f44336 !important;
         color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .status-indicator.due-soon {
+        background: #ff9800 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .status-indicator.on-track {
+        background: #4CAF50 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
     }
   </style>
@@ -463,7 +478,7 @@
             <option>EMP</option>
             <option>Mathematics</option>
             <option>English</option>
-            <option>Other</option>
+			<option>Other</option>
           </select>
           <input type="text" id="subjectInput" placeholder="Type Subject" style="display:none;">
         </div>
@@ -481,10 +496,10 @@
             <option>Mind Map</option>
             <option>Assignment</option>
             <option>Presentation</option>
-	    <option>Practical</option>
-	    <option>Project</option>  
+			<option>Practical</option>
+	        <option>Project</option>  
             <option>To - Do Task</option>
-	    <option>Other</option>
+	        <option>Other</option>
           </select>
           <input type="text" id="taskTitleInput" placeholder="Type Task Title" style="display:none;">
         </div>
